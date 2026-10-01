@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日能量消耗</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; }
+    body { background: #000; color: #d4d6da; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 48px 20px; }
+    .card { width: 100%; max-width: 460px; padding: 32px 28px; background: #07080a; border: 1px solid #1c1f24; border-radius: 4px; }
+    h1 { font-size: 1.1rem; font-weight: 500; letter-spacing: 0.12em; color: #f2f3f5; margin-bottom: 10px; }
+    p.desc { font-size: 0.8rem; color: #7d828a; line-height: 1.6; margin-bottom: 32px; }
+    .input-group { margin-bottom: 26px; }
+    .label-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: #a9adb3; margin-bottom: 10px; }
+    .val { color: #f2f3f5; font-variant-numeric: tabular-nums; }
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: #2a2e34; outline: none; cursor: pointer; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #c9ccd1; }
+    input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: #c9ccd1; }
+    button { width: 100%; padding: 13px; margin-top: 8px; background: transparent; border: 1px solid #3a3f46; border-radius: 2px; color: #e6e8eb; font-size: 0.85rem; letter-spacing: 0.15em; cursor: pointer; transition: 0.25s; }
+    button:hover { background: #111317; border-color: #6b7078; }
+    .result-box { margin-top: 32px; padding-top: 24px; border-top: 1px solid #1c1f24; display: none; }
+    .battery-header { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.8rem; color: #7d828a; letter-spacing: 0.1em; }
+    .battery-status { font-size: 2rem; font-weight: 300; color: #f2f3f5; font-variant-numeric: tabular-nums; }
+    .bar { height: 2px; background: #1c1f24; margin: 14px 0 18px; }
+    .bar-fill { height: 100%; width: 0; background: #c9ccd1; transition: width 0.6s ease; }
+    .advice { font-size: 0.82rem; color: #a9adb3; line-height: 1.7; }
+    .advice b { color: #f2f3f5; font-weight: 500; }
+    .section { font-size: 0.72rem; letter-spacing: 0.2em; color: #5c6168; margin: 8px 0 18px; padding-bottom: 6px; border-bottom: 1px solid #15171b; }
+    .copy-btn { margin-top: 18px; }
+    .toast { font-size: 0.75rem; color: #7d828a; text-align: center; margin-top: 10px; min-height: 1em; }
+    .checkbox-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+    .check-item { display: flex; align-items: center; font-size: 0.82rem; color: #a9adb3; background: #0f1115; padding: 10px 12px; border: 1px solid #1c1f24; border-radius: 2px; cursor: pointer; user-select: none; }
+    .check-item input { margin-right: 10px; accent-color: #c9ccd1; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>今日能量消耗</h1>
+  <p class="desc">基於「多線程並發消耗」模型，客觀評估你今日在多重壓力疊加下的神經真實負載。</p>
+
+  <div class="section">基礎充電</div>
+  <div class="input-group">
+    <div class="label-row"><span>昨晚有效深度睡眠（小時）</span><span class="val" id="v3">7</span></div>
+    <input type="range" id="i3" min="0" max="12" value="7" oninput="v3.innerText=this.value">
+  </div>
+
+  <div class="section">能量消耗</div>
+  <div class="input-group">
+    <div class="label-row"><span>應酬假笑 / 向上管理（小時）</span><span class="val" id="v1">0</span></div>
+    <input type="range" id="i1" min="0" max="8" value="0" oninput="v1.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>被迫承接他人情緒（小時）</span><span class="val" id="v2">0</span></div>
+    <input type="range" id="i2" min="0" max="8" value="0" oninput="v2.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>安慰他人（小時）</span><span class="val" id="v4">0</span></div>
+    <input type="range" id="i4" min="0" max="8" value="0" oninput="v4.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>家庭壓力（小時）</span><span class="val" id="v5">0</span></div>
+    <input type="range" id="i5" min="0" max="8" value="0" oninput="v5.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>戀愛關係矛盾 / 衝突（小時）</span><span class="val" id="v6">0</span></div>
+    <input type="range" id="i6" min="0" max="8" value="0" oninput="v6.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>對外朋友關係消耗（小時）</span><span class="val" id="v7">0</span></div>
+    <input type="range" id="i7" min="0" max="8" value="0" oninput="v7.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>強忍情緒（小時）</span><span class="val" id="v8">0</span></div>
+    <input type="range" id="i8" min="0" max="8" value="0" oninput="v8.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>家庭雜事（小時）</span><span class="val" id="v9">0</span></div>
+    <input type="range" id="i9" min="0" max="8" value="0" oninput="v9.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>公共場合擠逼 / 忍耐（小時）</span><span class="val" id="v13">0</span></div>
+    <input type="range" id="i13" min="0" max="8" value="0" oninput="v13.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>日常例行交際（小時）</span><span class="val" id="v14">0</span></div>
+    <input type="range" id="i14" min="0" max="8" value="0" oninput="v14.innerText=this.value">
+  </div>
+
+  <div class="section">能量回血</div>
+  <div class="input-group">
+    <div class="label-row"><span>自我活動時間（小時）</span><span class="val" id="v10">0</span></div>
+    <input type="range" id="i10" min="0" max="8" value="0" oninput="v10.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>心靈思考 / 沉澱（小時）</span><span class="val" id="v11">0</span></div>
+    <input type="range" id="i11" min="0" max="8" value="0" oninput="v11.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>平靜期（小時）</span><span class="val" id="v12">0</span></div>
+    <input type="range" id="i12" min="0" max="8" value="0" oninput="v12.innerText=this.value">
+  </div>
+
+  <div class="input-group">
+    <div class="label-row"><span>正向能量場合回復（小時）</span><span class="val" id="v15">0</span></div>
+    <input type="range" id="i15" min="0" max="8" value="0" oninput="v15.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>做喜愛的事情（小時）</span><span class="val" id="v16">0</span></div>
+    <input type="range" id="i16" min="0" max="8" value="0" oninput="v16.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>目標達成成功感（小時）</span><span class="val" id="v17">0</span></div>
+    <input type="range" id="i17" min="0" max="8" value="0" oninput="v17.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>寵物陪伴療癒（小時）</span><span class="val" id="v18">0</span></div>
+    <input type="range" id="i18" min="0" max="8" value="0" oninput="v18.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>環境滿足感（小時）</span><span class="val" id="v19">0</span></div>
+    <input type="range" id="i19" min="0" max="8" value="0" oninput="v19.innerText=this.value">
+  </div>
+  <div class="input-group">
+    <div class="label-row"><span>人際關係滿足感（小時）</span><span class="val" id="v20">0</span></div>
+    <input type="range" id="i20" min="0" max="8" value="0" oninput="v20.innerText=this.value">
+  </div>
+
+  <div class="section">同時發生的疊加負荷（可多選）</div>
+  <div class="checkbox-grid">
+    <label class="check-item"><input type="checkbox" id="c_mask"> 過程中需要維持假笑 / 刻意掩飾真實想法（+25% 功率）</label>
+    <label class="check-item"><input type="checkbox" id="c_drain"> 同時被迫聽取抱怨 / 承接情緒垃圾（+35% 功率）</label>
+    <label class="check-item"><input type="checkbox" id="c_conflict"> 伴隨突發衝突、冷暴力或言語施壓（+40% 功率）</label>
+    <label class="check-item"><input type="checkbox" id="c_suppress"> 極度憤怒或委屈但必須當場強忍（+35% 功率）</label>
+  </div>
+
+  <button onclick="calculate()">結算今日剩餘能量</button>
+
+  <div class="result-box" id="res">
+    <div class="battery-header"><span>剩餘能量</span><span class="battery-status" id="percent">100%</span></div>
+    <div class="bar"><div class="bar-fill" id="fill"></div></div>
+    <div class="advice" id="adviceText"></div>
+    <button class="copy-btn" onclick="copyResult()">複製結果</button>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+<script>
+function calculate() {
+  const H = id => +document.getElementById(id).value;
+  const C = id => document.getElementById(id).checked;
+  const sleep = H('i3');
+  
+  // 1. 睡眠基底計算
+  let base = 0;
+  if (sleep >= 7 && sleep <= 9) base = 100;
+  else if (sleep < 7) base = Math.max(30, Math.round(30 + (sleep / 7) * 70));
+  else base = Math.round(100 - (sleep - 9) * 3);
+
+  // 2. 並發負荷倍率（最高 2.0x）
+  let multi = 1.0; const mods = [];
+  if (C('c_mask')) { multi += 0.25; mods.push('刻意假笑'); }
+  if (C('c_drain')) { multi += 0.35; mods.push('承接垃圾'); }
+  if (C('c_conflict')) { multi += 0.40; mods.push('關係衝突'); }
+  if (C('c_suppress')) { multi += 0.35; mods.push('強忍情緒'); }
+  multi = Math.min(2.0, multi);
+
+  // 急性壓力對睡眠防護層的穿透損耗
+  if (multi >= 1.4) {
+    base = Math.round(base * 0.9); // 並發高壓直接折讓 10% 睡眠基礎
+  }
+
+  // 3. 消耗計算：上調核心人際衝突與情緒強忍費率，更貼合真實代價
+  const drains = [
+    { name: '應酬假笑 / 向上管理', h: H('i1'), r: 6.5, applyMulti: true },
+    { name: '承接他人情緒', h: H('i2'), r: 8.5, applyMulti: true },
+    { name: '安慰他人', h: H('i4'), r: 6.0, applyMulti: true },
+    { name: '家庭壓力', h: H('i5'), r: 8.0, applyMulti: true },
+    { name: '戀愛關係矛盾 / 衝突', h: H('i6'), r: 11.0, applyMulti: true },
+    { name: '對外朋友關係消耗', h: H('i7'), r: 4.0, applyMulti: true },
+    { name: '強忍情緒', h: H('i8'), r: 10.0, applyMulti: true },
+    { name: '公共場合擠逼 / 忍耐', h: H('i13'), r: 4.5, applyMulti: false },
+    { name: '日常例行交際', h: H('i14'), r: 3.5, applyMulti: false },
+    { name: '家庭雜事', h: H('i9'), r: 3.0, applyMulti: false }
+  ];
+
+  let totalDrain = 0; const topDrain = [];
+  drains.forEach(d => {
+    if (d.h > 0) {
+      const m = d.applyMulti ? multi : 1.0;
+      const c = d.h * d.r * m;
+      totalDrain += c;
+      topDrain.push({ name: d.name, cost: Math.round(c) });
+    }
+  });
+
+  // 4. 科學回血：高壓狀態下吸收率進一步收窄
+  const gainEff = multi >= 1.5 ? 0.45 : multi > 1.2 ? 0.7 : 1.0;
+  const rawGain = (H('i10')*3.5 + H('i11')*3.0 + H('i12')*4.5 + H('i15')*4.0 + H('i16')*4.5 + H('i17')*4.5 + H('i18')*3.5 + H('i19')*2.5 + H('i20')*3.5) * gainEff;
+  
+  // 高壓時單日回血硬上限收緊至 20%，平和時最高 30%
+  const gainCap = multi >= 1.4 ? 20 : 30;
+  const totalGain = Math.min(gainCap, Math.round(rawGain));
+
+  // 5. 結算最終電量
+  let finalEnergy = Math.round(base - totalDrain + totalGain);
+  if (finalEnergy > 100) finalEnergy = 100;
+
+  // 總時數統計
+  const allHours = drains.reduce((a, d) => a + d.h, 0) + sleep + H('i10') + H('i11') + H('i12') + H('i15') + H('i16') + H('i17') + H('i18') + H('i19') + H('i20');
+
+  // UI 更新
+  res.style.display = 'block';
+  percent.innerText = Math.max(0, finalEnergy) + '%';
+  fill.style.width = Math.max(0, finalEnergy) + '%';
+  const color = finalEnergy <= 30 ? '#e5534b' : finalEnergy < 65 ? '#d4a72c' : '#57ab5a';
+  percent.style.color = color; fill.style.background = color;
+
+  let head = "";
+  if (finalEnergy <= 0) {
+    head = "<b>電量徹底歸零（真實赤字：" + finalEnergy + "%）。</b>神經系統已強制關閉對外通路，請立刻中斷通訊並睡眠。";
+  } else if (finalEnergy <= 30) {
+    head = "<b>電量嚴重偏低（" + finalEnergy + "%）。</b>身心耗竭臨界點，神經防線瀕臨擊穿，今晚禁止處理任何外部社交。";
+  } else if (finalEnergy < 65) {
+    head = "<b>正常日常損耗（" + finalEnergy + "%）。</b>處於常規的工作後疲憊狀態，常規放空休息即可平穩回血。";
+  } else {
+    head = "<b>電量儲備充裕（" + finalEnergy + "%）。</b>心智屏障穩固，具備足夠帶寬處理高難度問題。";
+  }
+
+  let detail = '<br><br>睡眠基礎：' + base + '%（受壓力修正）　實質回血：+' + totalGain + '%（受上限約束）　消耗：-' + Math.round(totalDrain) + '%';
+  detail += '<br>並發功率倍率：<b>' + multi.toFixed(2) + 'x</b>';
+  if (mods.length) detail += '（' + mods.join('、') + '）';
+  topDrain.sort((x, y) => y.cost - x.cost);
+  if (topDrain.length) detail += '<br>主要消耗：' + topDrain.slice(0, 3).map(d => d.name + '（-' + d.cost + '%）').join('、');
+  if (allHours > 24) detail += '<br>⚠️ 填寫時數合計 ' + allHours + ' 小時（超出單日 24 小時），建議檢查重疊時數。';
+  adviceText.innerHTML = head + detail;
+}
+
+function copyResult() {
+  const rows = [...document.querySelectorAll('.input-group')].map(g => {
+    const sp = g.querySelectorAll('.label-row span');
+    return sp[0].innerText + '：' + sp[1].innerText;
+  });
+  const text = '【今日能量消耗結算】\n' + rows.join('\n') + '\n剩餘電量：' + percent.innerText + '\n' + adviceText.innerText;
+  const done = () => { toast.innerText = '已複製到剪貼板'; setTimeout(() => toast.innerText = '', 1500); };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done);
+  } else {
+    const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t);
+    t.select(); document.execCommand('copy'); t.remove(); done();
+  }
+}
+</script>
+</body>
+</html>
