@@ -31,6 +31,7 @@
     .checkbox-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
     .check-item { display: flex; align-items: center; font-size: 0.82rem; color: #a9adb3; background: #0f1115; padding: 10px 12px; border: 1px solid #1c1f24; border-radius: 2px; cursor: pointer; user-select: none; }
     .check-item input { margin-right: 10px; accent-color: #c9ccd1; cursor: pointer; }
+    .counter { font-size: 0.72rem; color: #5c6168; text-align: center; margin-top: 28px; letter-spacing: 0.08em; }
   </style>
 </head>
 <body>
@@ -142,20 +143,23 @@
     <button class="copy-btn" onclick="copyResult()">複製結果</button>
     <div class="toast" id="toast"></div>
   </div>
+
+  <div class="counter">
+    累計結算：<span id="visit-count" style="color: #8b949e;">--</span> 次
+  </div>
 </div>
+
 <script>
 function calculate() {
   const H = id => +document.getElementById(id).value;
   const C = id => document.getElementById(id).checked;
   const sleep = H('i3');
   
-  // 1. 睡眠基底計算
   let base = 0;
   if (sleep >= 7 && sleep <= 9) base = 100;
   else if (sleep < 7) base = Math.max(30, Math.round(30 + (sleep / 7) * 70));
   else base = Math.round(100 - (sleep - 9) * 3);
 
-  // 2. 並發負荷倍率（最高 2.0x）
   let multi = 1.0; const mods = [];
   if (C('c_mask')) { multi += 0.25; mods.push('刻意假笑'); }
   if (C('c_drain')) { multi += 0.35; mods.push('承接垃圾'); }
@@ -163,12 +167,10 @@ function calculate() {
   if (C('c_suppress')) { multi += 0.35; mods.push('強忍情緒'); }
   multi = Math.min(2.0, multi);
 
-  // 急性壓力對睡眠防護層的穿透損耗
   if (multi >= 1.4) {
-    base = Math.round(base * 0.9); // 並發高壓直接折讓 10% 睡眠基礎
+    base = Math.round(base * 0.9);
   }
 
-  // 3. 消耗計算：上調核心人際衝突與情緒強忍費率，更貼合真實代價
   const drains = [
     { name: '應酬假笑 / 向上管理', h: H('i1'), r: 6.5, applyMulti: true },
     { name: '承接他人情緒', h: H('i2'), r: 8.5, applyMulti: true },
@@ -192,22 +194,17 @@ function calculate() {
     }
   });
 
-  // 4. 科學回血：高壓狀態下吸收率進一步收窄
   const gainEff = multi >= 1.5 ? 0.45 : multi > 1.2 ? 0.7 : 1.0;
   const rawGain = (H('i10')*3.5 + H('i11')*3.0 + H('i12')*4.5 + H('i15')*4.0 + H('i16')*4.5 + H('i17')*4.5 + H('i18')*3.5 + H('i19')*2.5 + H('i20')*3.5) * gainEff;
   
-  // 高壓時單日回血硬上限收緊至 20%，平和時最高 30%
   const gainCap = multi >= 1.4 ? 20 : 30;
   const totalGain = Math.min(gainCap, Math.round(rawGain));
 
-  // 5. 結算最終電量
   let finalEnergy = Math.round(base - totalDrain + totalGain);
   if (finalEnergy > 100) finalEnergy = 100;
 
-  // 總時數統計
   const allHours = drains.reduce((a, d) => a + d.h, 0) + sleep + H('i10') + H('i11') + H('i12') + H('i15') + H('i16') + H('i17') + H('i18') + H('i19') + H('i20');
 
-  // UI 更新
   res.style.display = 'block';
   percent.innerText = Math.max(0, finalEnergy) + '%';
   fill.style.width = Math.max(0, finalEnergy) + '%';
@@ -248,10 +245,12 @@ function copyResult() {
     t.select(); document.execCommand('copy'); t.remove(); done();
   }
 }
-</script>
-  <div style="text-align: center; margin-top: 28px; opacity: 0.7;">
-    <img src="https://api.visitorbadge.io/api/visitors?pageId=gamecheung99-cyber.Jessiegame&label=%E7%B4%AF%E8%A8%88%E8%A8%AA%E5%95%8F&labelColor=%231c1f24&countColor=%232a2e34&style=flat" alt="訪問量" />
-  </div>
 
+// 實時統計
+fetch('https://api.counterapi.dev/v1/gamecheung99/jessiegame/up')
+  .then(r => r.json())
+  .then(d => { if (d && d.count) document.getElementById('visit-count').innerText = d.count; })
+  .catch(() => { document.getElementById('visit-count').innerText = '1'; });
+</script>
 </body>
 </html>
